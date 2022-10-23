@@ -1,9 +1,8 @@
 <script>
   import Modal from "./components/modal.svelte";
-  import { pageHistory } from "./lib/history";
+  import { pageHistory } from "./lib/history.js";
 
   let historyDialog = false;
-  let txId = window.transactionId;
 
   async function handleClick() {
     historyDialog = true;
@@ -15,7 +14,7 @@
 </button>
 <Modal open={historyDialog} on:click={() => (historyDialog = false)}>
   <h2 class="text-xl mb-8">Permapage History</h2>
-  {#await pageHistory(txId)}
+  {#await pageHistory()}
     Loading...
   {:then hx}
     <table class="table">

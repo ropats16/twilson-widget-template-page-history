@@ -7,19 +7,21 @@ const arweave = window.Arweave.init({
 })
 
 // creates warp to work with smart contracts
-const warp = window.warp.WarpWebFactory.memCached(arweave)
+//const warp = window.warp.WarpWebFactory.memCached(arweave)
 
-export async function pageHistory(txId) {
-  const { owner, title } = getTxInfo(txId)
+export async function pageHistory() {
+  const code = document.head.querySelector('meta[name="code"]').content
+  const owner = document.head.querySelector('meta[name="author"]').content
+
   const result = await arweave.api.post('graphql', {
     // historyQuery is function to build our query text
-    query: historyQuery(owner, title)
+    query: historyQuery(owner, code)
   })
 
   return formatData(result.data)
 }
 
-function historyQuery(owner, title) {
+function historyQuery(owner, code) {
   return `
 query {
   transactions(
@@ -28,7 +30,7 @@ query {
     tags: [
       {name: "Content-Type", values: ["application/json"]},
       {name: "App-Name", values: ["PermaPages"]},
-      {name: "Page-Title", values: ["${title}"]}
+      {name: "Page-Code", values: ["${code}"]}
     ]
   ) {
     edges {
@@ -46,7 +48,8 @@ query {
 }
 
 function formatData({ data }) {
-  return data.transaction.edges.map(
+
+  return data.transactions.edges.map(
     ({ node }) => {
       function getTag(tagName) {
         return node.tags.find(tag => tag.name === tagName)?.value
@@ -64,28 +67,4 @@ function formatData({ data }) {
       }
     }
   )
-}
-
-async function getTxInfo(owner, title) {
-  const { data } = await arweave.api.post('graphql', {
-    // historyQuery is function to build our query text
-    query: `
-    query {
-      transaction(id:"${txId}") {
-        owner {
-          address
-        }
-        tags {
-          name
-          value
-        }
-      }
-    }
-    `
-  })
-
-  return {
-    owner: data.data.transaction.owner.address,
-    title: data.data.transaction.tags.find(t => t.name === 'Page-Title')?.value,
-  }
 }
