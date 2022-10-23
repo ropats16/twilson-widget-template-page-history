@@ -48,7 +48,7 @@ query {
 function formatData({ data }) {
   return data.transaction.edges.map(
     ({ node }) => {
-      function getTag(name) {
+      function getTag(tagName) {
         return node.tags.find(tag => tag.name === tagName)?.value
       }
 
@@ -86,6 +86,6 @@ async function getTxInfo(owner, title) {
 
   return {
     owner: data.data.transaction.owner.address,
-    title: data.data.transaction.find(t => t.name === 'Page-Title')?.value,
+    title: data.data.transaction.tags.find(t => t.name === 'Page-Title')?.value,
   }
 }
